@@ -1,0 +1,45 @@
+# PATH
+export PATH=$HOME/.local/bin:$PATH
+export PATH=$HOME/docker/bin:$PATH
+export PATH=$HOME/System/bin:$PATH
+
+# default
+export EDITOR=vim
+export TERMINAL=st
+export BROWSER=firefox
+
+# some program's config
+export MANWIDTH=80
+export TERM=tmux-256color
+export HISTORY_LENGTH=2000
+
+# path configs
+export MAILPATH=/var/spool/mail/inbox
+export DOTREMINDERS=$XDG_CONFIG_HOME/remind
+export XDG_DATA_HOME=$HOME/.data
+
+# cool prompt
+PS1='$(exitcode=$?; [ $exitcode -ne 0 ] && beginpromptcolor="\[\e[0;31m\]" && exitcode_str="[$exitcode]" ||  beginpromptcolor="\[\e[0;32m\]" ; printf "\W \[\e[0;30m\]($(jobs | wc -l))\[\e[0m\] $beginpromptcolor$exitcode_str\$ \[\e[0m\]")'
+
+# colored GCC warnings and errors
+export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+export HISTSIZE=1000
+export HISTFILESIZE=2000
+
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+export HISTCONTROL=ignoreboth
+
+# man colors
+export LESS_TERMCAP_mb=$'\e[31m'       # begin bold
+export LESS_TERMCAP_md=$'\e[34m'       # begin blink
+export LESS_TERMCAP_so=$'\e[37;44m'    # begin reverse video
+export LESS_TERMCAP_us=$'\e[30m'       # begin underline
+export LESS_TERMCAP_me=$'\e[0m'        # reset bold/blink
+export LESS_TERMCAP_se=$'\e[0m'        # reset reverse video
+export LESS_TERMCAP_ue=$'\e[0m'        # reset underline
+export GROFF_NO_SGR=1                  # for konsole and gnome-terminal
+
+source ~/.bash_variables.priv
