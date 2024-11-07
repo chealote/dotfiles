@@ -1,5 +1,3 @@
-;; (package-refresh-contents) ;; TODO do I need to run this everytime?
-
 (tool-bar-mode -1)
 (menu-bar-mode -1)
 (savehist-mode 1)
@@ -20,17 +18,20 @@
       backup-by-copying t)
 
 (defun che-full-open-command (filepath)
-  (concat custom-open-command "'" filepath "'"))
+  (concat che-custom-open-command "'" filepath "'"))
 
 ;; open is https://github.com/chealote/open
-(defvar custom-open-command "open "
+(defvar che-custom-open-command "open "
   "The custom command that I want to open files with")
 
+;; TODO this should be using ffap or something else
 (defun che-dired-custom-open-file ()
   "Open a file using dired-custom-open"
   (interactive)
+  ;; (call-process-shell-command
+  ;; (setq-local display-buffer-alist 'display-buffer-no-window)
   (call-process-shell-command
-   (che-full-open-command (dired-get-file-for-visit))))
+   (che-full-open-command (dired-get-file-for-visit)) nil 0))
 
 (add-hook 'dired-mode-hook
           (lambda ()
@@ -38,7 +39,8 @@
 
 (add-hook 'js-mode-hook
 	  (lambda ()
-	    (setq-local js-indent-level 2)))
+	    (setq-local js-indent-level 2)
+	    (indent-tabs-mode -1)))
 
 (add-hook 'go-mode-hook
 	  (lambda ()
@@ -50,7 +52,8 @@
 
 (add-hook 'prog-mode-hook
 	  (lambda ()
-	    (whitespace-mode)))
+	    (whitespace-mode)
+	    (display-line-numbers-mode)))
 
 (add-hook 'csharp-mode-hook
 	  (lambda ()
@@ -61,6 +64,15 @@
 	  (lambda ()
 	    (indent-tabs-mode -1)))
 
+(add-hook 'markdown-mode-hook
+	  (lambda ()
+	    (local-unset-key (kbd "M-n"))
+	    (local-unset-key (kbd "M-p"))
+	    (flyspell-mode)
+	    (flyspell-buffer)))
+
+(global-unset-key (kbd "C-z"))
+
 ;; c-a moves to beggining of line or beggining of text
 (global-set-key (kbd "C-a") 'beginning-of-line-or-indentation)
 (defun beginning-of-line-or-indentation ()
@@ -70,37 +82,12 @@
           (back-to-indentation)
     (beginning-of-line)))
 
-(defun che-move-empty-line (move-to-line)
-  (interactive)
-  (if (string= (thing-at-point 'line t) "\n")
-      (while (string= (thing-at-point 'line t) "\n") (funcall move-to-line)))
-  (while (not (string= (thing-at-point 'line t) "\n")) (funcall move-to-line)))
-
-(defun che-next-empty-line ()
-  (interactive)
-  (che-move-empty-line 'next-line))
-
-(defun che-previous-empty-line ()
-  (interactive)
-  (che-move-empty-line 'previous-line))
-(global-set-key (kbd "M-n") 'che-next-empty-line)
-(global-set-key (kbd "M-p") 'che-previous-empty-line)
-
-(global-set-key (kbd "M-N") 'scroll-down-line)
-(global-set-key (kbd "M-P") 'scroll-up-line)
+(global-set-key (kbd "M-N") 'scroll-up-line)
+(global-set-key (kbd "M-P") 'scroll-down-line)
 
 (setq inhibit-splash-screen t)
 
 (global-set-key (kbd "C-=") 'er/expand-region)
-;; TODO find a way to not replace negative argument for only this er command
-;; (global-set-key (kbd "C--") 'er/contract-region)
-
-;; TODO I'm trying to match a group even if there's spaces before
-;; whatever is considered a group
-(defun che-forward-list ()
-  (interactive)
-  (while (and (not (forward-list))
-	      (not (= (char-after) 10)) (forward-char))))
 
 ;; TODO make this command interactive only in c-mode
 (defun che-c-indent ()
@@ -114,3 +101,24 @@
 		    "indent"
 		    :buffer (current-buffer)
 		    :args "-linux")))
+
+(defvar che-journal-base-path "~/Documents/journal/")
+
+;; TODO keep working on journal functions
+(defun che-journal-today ()
+  (interactive)
+  (defconst base-path che-journal-base-path)
+  (find-file (concat base-path (format-time-string "%Y-%m-%d.txt.gpg"))))
+
+(defun che-open-terminal ()
+  (interactive)
+  (call-process-shell-command "st"))
+(global-set-key (kbd "C-c C-t") 'che-open-terminal)
+
+(setq org-agenda-files
+      '("~/Documents/org/"))
+
+(defun che-save-image (image-name)
+  (interactive "MName of the image: ")
+  (call-process-shell-command
+   (concat "xclip -selection clipboard -t image/png -o > " image-name)))
