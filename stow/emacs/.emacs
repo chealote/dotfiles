@@ -6,6 +6,8 @@
 (whitespace-mode t)
 (scroll-bar-mode 0)
 
+(setq isearch-allow-scroll 'unlimited)
+
 (setq save-interprogram-paste-before-kill t)
 (setq x-select-enable-clipboard nil)
 (global-set-key (kbd "C-c y") 'clipboard-yank)
@@ -46,9 +48,11 @@
 	  (lambda ()
 	    (setq-local tab-width 4)))
 
-(add-hook 'c-mode-common-hook
+(add-hook 'c-mode-hook
 	  (lambda ()
-	    (c-set-style "linux")))
+	    (indent-tabs-mode 1)
+	    (setq-local tab-width 4)
+	    (setq-local c-basic-offset 4)))
 
 (add-hook 'prog-mode-hook
 	  (lambda ()
@@ -58,7 +62,8 @@
 (add-hook 'csharp-mode-hook
 	  (lambda ()
 	    (indent-tabs-mode -1)
-	    (setq-local tab-width 4)))
+	    (setq-local c-basic-offset 2)
+	    (setq-local tab-width 2)))
 
 (add-hook 'mhtml-mode-hook
 	  (lambda ()
@@ -71,7 +76,37 @@
 	    (flyspell-mode)
 	    (flyspell-buffer)))
 
+(add-hook 'transient-mark-mode-hook
+	  (lambda ()
+	    (whitespace-mode nil)))
+
 (global-unset-key (kbd "C-z"))
+
+(add-hook 'ediff-mode-hook
+	  (lambda ()
+	    (setq-local ediff-keep-variants nil)
+	    (setq-local ediff-window-setup-function 'ediff-setup-windows-plain)
+	    (setq-local ediff-split-window-function 'split-window-horizontally)))
+
+;; TODO map key to delete images easily
+;; TODO function to set current image as background
+(defun che-image-mode-rm ()
+  (interactive)
+  (che-image-mode-format-command "rm " buffer-file-name))
+
+(defun che-image-mode-background ()
+  (interactive)
+  (che-image-mode-format-command "feh --bg-fill " buffer-file-name))
+
+(defun che-image-mode-format-command (command filename)
+  (if (equal major-mode 'image-mode)
+      (let (
+	    (full-command (concat command filename))
+	    )
+      (if (y-or-n-p (concat "Run " full-command "?"))
+	  (message full-command)
+	(message "Command cancelled...")))
+    (message "Not in image-mode")))
 
 ;; c-a moves to beggining of line or beggining of text
 (global-set-key (kbd "C-a") 'beginning-of-line-or-indentation)
@@ -112,13 +147,33 @@
 
 (defun che-open-terminal ()
   (interactive)
-  (call-process-shell-command "st"))
+  (call-process-shell-command "st" nil 0))
 (global-set-key (kbd "C-c C-t") 'che-open-terminal)
 
 (setq org-agenda-files
-      '("~/Documents/org/"))
+      '("~/Documents/org" "~/Documents/org/work"))
 
 (defun che-save-image (image-name)
   (interactive "MName of the image: ")
   (call-process-shell-command
    (concat "xclip -selection clipboard -t image/png -o > " image-name)))
+
+(defvar che-json-format-command "jq")
+(defun che-json-format-between-points (pb pe)
+  (shell-command-on-region pb pe che-json-format-command t t))
+
+(defun che-json-format ()
+  (interactive)
+  (if (equal major-mode 'js-mode)
+      (if (region-active-p)
+	  (che-json-format-between-points (region-beginning) (region-end))
+	(che-json-format-between-points (pos-bol) (pos-eol)))
+  (message "Not in json-mode")))
+
+;; watch the video again of multiple-cursors
+;; TODO not using these enough
+(global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+(global-set-key (kbd "C-c j") 'mc/mark-all-dwim)
