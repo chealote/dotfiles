@@ -6,7 +6,16 @@
 (whitespace-mode t)
 (scroll-bar-mode 0)
 
+;; from a 4chan lisp post in /g/
 (setq isearch-allow-scroll 'unlimited)
+
+;; https://stackoverflow.com/questions/15390178/emacs-and-symbolic-links
+(setq vc-follow-symlinks t)
+
+;; https://emacs.stackexchange.com/questions/17172/how-to-make-end-of-buffer-visible
+;; TODO don't want to use setq-default because t is not the default value
+;; and setq _should_ be global?
+(setq indicate-empty-lines t)
 
 (setq save-interprogram-paste-before-kill t)
 (setq x-select-enable-clipboard nil)
@@ -88,6 +97,10 @@
 	    (setq-local ediff-window-setup-function 'ediff-setup-windows-plain)
 	    (setq-local ediff-split-window-function 'split-window-horizontally)))
 
+(add-hook 'sh-mode-hook
+	  (lambda ()
+	    (indent-tabs-mode -1)))
+
 ;; TODO map key to delete images easily
 ;; TODO function to set current image as background
 (defun che-image-mode-rm ()
@@ -162,13 +175,12 @@
 (defun che-json-format-between-points (pb pe)
   (shell-command-on-region pb pe che-json-format-command t t))
 
+;; pos-bol, pos-eol taken from here: http://xahlee.info/emacs/emacs/elisp_all_about_lines.html
 (defun che-json-format ()
   (interactive)
-  (if (equal major-mode 'js-mode)
-      (if (region-active-p)
-	  (che-json-format-between-points (region-beginning) (region-end))
-	(che-json-format-between-points (pos-bol) (pos-eol)))
-  (message "Not in json-mode")))
+  (if (region-active-p)
+      (che-json-format-between-points (region-beginning) (region-end))
+    (che-json-format-between-points (pos-bol) (pos-eol))))
 
 ;; watch the video again of multiple-cursors
 ;; TODO not using these enough
@@ -177,3 +189,10 @@
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 (global-set-key (kbd "C-c j") 'mc/mark-all-dwim)
+
+(defvar che-wallpapers-path "~/Pictures/Wallpapers")
+(defun che-wallpapers-update-wallpaper ()
+  (interactive)
+  (let ((files (directory-files che-wallpapers-path t "[0-9]+\\.\\(jpg\\|png\\)")))
+    (let ((file (nth (random (length files)) files)))
+      (shell-command (concat "feh --bg-fill " file)))))
