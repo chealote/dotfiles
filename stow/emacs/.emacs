@@ -15,7 +15,10 @@
 ;; https://emacs.stackexchange.com/questions/17172/how-to-make-end-of-buffer-visible
 ;; TODO don't want to use setq-default because t is not the default value
 ;; and setq _should_ be global?
-(setq indicate-empty-lines t)
+(setq-default indicate-empty-lines t)
+
+;; ignored directories for M-x rgrep
+;; (push "node_modules" grep-find-ignored-directories)
 
 (setq save-interprogram-paste-before-kill t)
 (setq x-select-enable-clipboard nil)
@@ -137,18 +140,32 @@
 
 (global-set-key (kbd "C-=") 'er/expand-region)
 
+(setq org-agenda-files
+      '("~/Documents/org" "~/Documents/org/work"))
+
 ;; TODO make this command interactive only in c-mode
 (defun che-c-indent ()
   ;; format c files with "indent -linux"
   (interactive)
   ;; TODO this save-excursion is supposed to save my cursor position
   ;; and return after running the shell cmd, but it's not doing that
-  (save-excursion  (call-process-region
-		    (point-min)
-		    (point-max)
-		    "indent"
-		    :buffer (current-buffer)
-		    :args "-linux")))
+  (if (= (call-process "which" nil nil nil "indent") 0)
+      (call-process-region
+       (point-min)
+       (point-max)
+       "indent"
+       :delete t
+       :display t)
+    (message "`indent` program is not installed")))
+
+   ;; :buffer (current-buffer)
+   ;; :args "-linux")
+  ;; (save-excursion  (call-process-region
+  ;; 		    (point-min)
+  ;; 		    (point-max)
+  ;; 		    "indent"
+  ;; 		    :buffer (current-buffer)
+  ;; 		    :args "-linux")))
 
 (defvar che-journal-base-path "~/Documents/journal/")
 
@@ -162,9 +179,6 @@
   (interactive)
   (call-process-shell-command "st" nil 0))
 (global-set-key (kbd "C-c C-t") 'che-open-terminal)
-
-(setq org-agenda-files
-      '("~/Documents/org" "~/Documents/org/work"))
 
 (defun che-save-image (image-name)
   (interactive "MName of the image: ")
@@ -180,7 +194,8 @@
   (interactive)
   (if (region-active-p)
       (che-json-format-between-points (region-beginning) (region-end))
-    (che-json-format-between-points (pos-bol) (pos-eol))))
+    ;; I usually paste a single line with the json and want that formatted
+    (che-json-format-between-points (line-beginning-position) (line-end-position))))
 
 ;; watch the video again of multiple-cursors
 ;; TODO not using these enough
