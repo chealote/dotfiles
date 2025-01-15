@@ -17,3 +17,7 @@ stow -d stow/ -t $HOME -n $package_name -v
 
 Replace `$package_name` with the package to install, or with `ls stow/` to
 install all.
+
+## vim package?
+
+Is [here](https://github.com/chealote/vim-config)
