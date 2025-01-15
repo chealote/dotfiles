@@ -3,6 +3,8 @@
 (savehist-mode 1)
 (blink-cursor-mode -1)
 
+(global-auto-revert-mode t)
+
 (whitespace-mode t)
 (scroll-bar-mode 0)
 
@@ -104,24 +106,26 @@
 	  (lambda ()
 	    (indent-tabs-mode -1)))
 
+(add-hook 'emacs-lisp-mode-hook
+	  (lambda ()
+	    (indent-tabs-mode -1)))
+
 ;; TODO map key to delete images easily
 ;; TODO function to set current image as background
 (defun che-image-mode-rm ()
   (interactive)
-  (che-image-mode-format-command "rm " buffer-file-name))
+  (che-image-mode--prompt-format-command "rm " buffer-file-name))
 
 (defun che-image-mode-background ()
   (interactive)
-  (che-image-mode-format-command "feh --bg-fill " buffer-file-name))
+  (che-image-mode--prompt-format-command "feh --bg-fill " buffer-file-name))
 
-(defun che-image-mode-format-command (command filename)
+(defun che-image-mode--prompt-format-command (command filename)
   (if (equal major-mode 'image-mode)
-      (let (
-	    (full-command (concat command filename))
-	    )
-      (if (y-or-n-p (concat "Run " full-command "?"))
-	  (message full-command)
-	(message "Command cancelled...")))
+      (let ((full-command (concat command filename)))
+        (if (y-or-n-p (concat "Run " full-command "?"))
+	    (shell-command full-command)
+	  (message "Command cancelled...")))
     (message "Not in image-mode")))
 
 ;; c-a moves to beggining of line or beggining of text
@@ -211,3 +215,74 @@
   (let ((files (directory-files che-wallpapers-path t "[0-9]+\\.\\(jpg\\|png\\)")))
     (let ((file (nth (random (length files)) files)))
       (shell-command (concat "feh --bg-fill " file)))))
+
+(setq che--is-light-theme t)
+(defun che-toggle-theme ()
+  (interactive)
+  (if che--is-light-theme
+      (progn ;; set dark theme
+        (set-face-attribute 'default nil :background "#111" :foreground "#ddd" :height 135 :family "Fira Code")
+        (set-face-attribute 'region  nil :background "#333")
+        (set-face-attribute 'whitespace-hspace  nil :foreground "#444")
+        (set-face-attribute 'whitespace-indentation  nil :foreground "#444" :background "#111")
+        (set-face-attribute 'whitespace-missing-newline-at-eof  nil :background "#444")
+        (set-face-attribute 'whitespace-space  nil :foreground "#444")
+        (set-face-attribute 'whitespace-tab  nil :foreground "#444")
+        (set-face-attribute 'whitespace-space-before-tab nil)
+        (set-face-attribute 'whitespace-line nil :inherit 'default :background "#333")
+        (set-face-attribute 'line-number nil :inherit 'default :foreground "#777")
+        (set-face-attribute 'line-number-current-line nil :inherit 'line-number :weight 'bold :foreground "#777")
+        ;; (set-face-attribute 'markdown-header-face nil :inherit 'font-lock-function-name-face)
+        ;; (set-face-attribute 'markdown-header-face-1 nil :inherit 'outline-1 :height 1.5)
+        ;; (set-face-attribute 'markdown-header-face-2 nil :inherit 'outline-2 :height 1.4)
+        ;; (set-face-attribute 'markdown-header-face-3 nil :inherit 'outline-3 :height 1.3)
+        ;; (set-face-attribute 'markdown-header-face-4 nil :inherit 'markdown-header-face :height 1.1)
+
+        (setq che--is-light-theme nil))
+    (progn ;; set light theme
+      (set-face-attribute 'default nil :background "#ddd" :foreground "#111" :height 135 :family "Liberation Mono")
+      (set-face-attribute 'region  nil :background "#bbb")
+      (set-face-attribute 'whitespace-hspace  nil :foreground "#bbb")
+      (set-face-attribute 'whitespace-indentation  nil :foreground "#bbb")
+      (set-face-attribute 'whitespace-missing-newline-at-eof  nil :background "#bbb")
+      (set-face-attribute 'whitespace-space  nil :foreground "#bbb")
+      (set-face-attribute 'whitespace-tab  nil :foreground "#bbb")
+      (set-face-attribute 'whitespace-space-before-tab nil)
+      (set-face-attribute 'line-number nil :inherit 'default :foreground "#777")
+      (set-face-attribute 'line-number-current-line nil :inherit 'line-number :weight 'bold :foreground "#444")
+      ;; (set-face-attribute 'markdown-header-face nil :inherit 'font-lock-function-name-face)
+      ;; (set-face-attribute 'markdown-header-face-1 nil :inherit 'outline-1 :height 1.5)
+      ;; (set-face-attribute 'markdown-header-face-2 nil :inherit 'outline-2 :height 1.4)
+      ;; (set-face-attribute 'markdown-header-face-3 nil :inherit 'outline-3 :height 1.3)
+      ;; (set-face-attribute 'markdown-header-face-4 nil :inherit 'markdown-header-face :height 1.1)
+
+      (setq che--is-light-theme t))))
+
+(che-toggle-theme)
+
+;; TODO old theme from custom-var
+;; (custom-set-faces
+;;  ;; custom-set-faces was added by Custom.
+;;  ;; If you edit it by hand, you could mess it up, so be careful.
+;;  ;; Your init file should contain only one such instance.
+;;  ;; If there is more than one, they won't work right.
+;;  '(default ((t (:inherit nil :extend nil :stipple nil :background "#ddd" :foreground "#111" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 135 :width normal :foundry "1ASC" :family "Liberation Mono"))))
+;;  '(fixed-pitch ((t (:background "#333" :family "Liberation Mono"))))
+;;  '(line-number ((t (:inherit default :foreground "#777"))))
+;;  '(line-number-current-line ((t (:weight bold :foreground "#999" :inherit line-number))))
+;;  '(markdown-header-face ((t (:inherit font-lock-function-name-face))))
+;;  '(markdown-header-face-1 ((t (:inherit outline-1 :height 1.5))))
+;;  '(markdown-header-face-2 ((t (:inherit outline-2 :height 1.4))))
+;;  '(markdown-header-face-3 ((t (:inherit outline-3 :height 1.3))))
+;;  '(markdown-header-face-4 ((t (:inherit markdown-header-face :height 1.1))))
+;;  '(org-level-1 ((t (:inherit outline-1 :extend nil))))
+;;  '(org-level-2 ((t (:inherit outline-2 :extend nil))))
+;;  '(region ((t (:extend t :background "#444"))))
+;;  '(whitespace-empty ((t (:extend t))))
+;;  '(whitespace-hspace ((t (:foreground "#444"))))
+;;  '(whitespace-indentation ((t (:foreground "#444"))))
+;;  '(whitespace-line ((t nil)))
+;;  '(whitespace-missing-newline-at-eof ((t (:background "#444"))))
+;;  '(whitespace-space ((t (:foreground "#444"))))
+;;  '(whitespace-tab ((t (:foreground "#444")))))
+
