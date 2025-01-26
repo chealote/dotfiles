@@ -76,8 +76,8 @@
 (add-hook 'csharp-mode-hook
           (lambda ()
             (indent-tabs-mode -1)
-            (setq-local c-basic-offset 2)
-            (setq-local tab-width 2)))
+            (setq-local c-basic-offset 4)
+            (setq-local tab-width 4)))
 
 (add-hook 'mhtml-mode-hook
           (lambda ()
@@ -88,7 +88,14 @@
             (local-unset-key (kbd "M-n"))
             (local-unset-key (kbd "M-p"))
             (flyspell-mode)
-            (flyspell-buffer)))
+            (flyspell-buffer)
+            (set-face-attribute 'markdown-pre-face nil
+                                :family "Liberation Mono"
+                                :height 140)
+
+            (set-face-attribute 'markdown-inline-code-face nil
+                                :family "Liberation Mono"
+                                :height 140)))
 
 (add-hook 'transient-mark-mode-hook
           (lambda ()
@@ -109,8 +116,7 @@
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
-            (indent-tabs-mode t)
-            (setq-local tab-width 4)))
+            (indent-tabs-mode -1)))
 
 (defun che-image-mode-rm ()
   (interactive)
@@ -209,9 +215,9 @@
 (set-face-attribute 'default nil
                     :background "#111"
                     :foreground "#ddd"
-                    :family "Iosevka Term"
+                    :family "Liberation Mono"
                     :weight 'normal
-                    :height 150)
+                    :height 140)
 
 (setq whitespace-style
       '(face tabs spaces trailing indentation space-mark tab-mark missing-newline-at-eof))
@@ -235,3 +241,14 @@
 (set-face-attribute 'whitespace-tab nil
                     :background "unspecified"
                     :foreground "#222")
+
+;; TODO way too simple
+(defun che-replace-all-occurrences (replace with ext)
+  (interactive "Mreplace: \nMwith: \nMextension (*.ext): ")
+  (let ((command (concat "find . -type f -name \"*."
+                         ext
+                         "\" | xargs sed -i s/"
+                         replace "/" with "/g")))
+    (if (y-or-n-p
+         (concat "Run this command?: " command))
+        (shell-command command))))
